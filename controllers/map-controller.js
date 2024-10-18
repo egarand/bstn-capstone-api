@@ -44,10 +44,7 @@ function translateOSMData(element) {
 // || ROUTE HANDLERS
 
 export async function searchFeatures(req, res) {
-	const { lat, lon, radius } = req.query;
-	const types = req.query.types?.split(",");
-
-	// TODO error checking
+	const { lat, lon, radius, types } = req.query;
 
 	try {
 		const bbox =
@@ -63,9 +60,9 @@ export async function searchFeatures(req, res) {
 
 		const query = `\
 			[out:json][timeout:25][bbox:${south},${west},${north},${east}];${
-			types.includes("trails") ? trailsQuery : ""}${
-			types.includes("campgrounds") ? campgroundsQuery : ""}${
-			types.includes("reserves") ? reservesQuery : ""}`;
+			types.includes("t") ? trailsQuery : ""}${
+			types.includes("c") ? campgroundsQuery : ""}${
+			types.includes("r") ? reservesQuery : ""}`;
 
 		const { data } = await axios.post(overpassURL, query, {
 			headers: { "content-type": "text/plain" },
