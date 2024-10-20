@@ -13,6 +13,10 @@ router.route("/")
 	);
 
 router.route("/:osm_type/:osm_id")
-	.get(mapController.getSingleFeature);
+	.get(
+		apicache("15 minutes"),
+		...validate.mapGetSingle,
+		mapController.getSingleFeature
+	);
 
 export default router;

@@ -1,4 +1,4 @@
-import { query, validationResult } from "express-validator";
+import { query, param, validationResult } from "express-validator";
 
 function rejectBadValues(req, res, next) {
 	const errors = validationResult(req);
@@ -20,5 +20,13 @@ export const mapSearchFeatures = [
 		.notEmpty().isFloat({min: 10, max: 10_000}),
 	query("types")
 		.trim().isWhitelisted(["t", "c", "r"]),
+	rejectBadValues
+];
+
+export const mapGetSingle = [
+	param("osm_id")
+		.trim().notEmpty().isInt(),
+	param("osm_type")
+		.trim().notEmpty().isIn(["way","relation","node"]),
 	rejectBadValues
 ];
