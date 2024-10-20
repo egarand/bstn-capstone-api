@@ -13,6 +13,10 @@ router.route("/")
 	);
 
 router.route("/:id")
-	.get(speciesController.getSingleSpecies);
+	.get(
+		apicache("15 minutes"),
+		...validate.speciesGetSingle,
+		speciesController.getSingleSpecies
+	);
 
 export default router;
