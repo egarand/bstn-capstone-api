@@ -38,6 +38,15 @@ function translateOSMData(element) {
 	} else if (element.type === "way") {
 		result.geometry = element.geometry;
 	}
+
+	if (result.tags.leisure?.includes("nature_reserve")) {
+		result.category = "reserve";
+	} else if (result.tags.tourism?.includes("camp_site") || Object.hasOwn(result.tags, "camp_site")) {
+		result.category = "campground";
+	} else {
+		result.category = "trail";
+	}
+
 	return result;
 }
 
@@ -68,30 +77,31 @@ export async function searchFeatures(req, res) {
 			headers: { "content-type": "text/plain" },
 			responseType: "json"
 		});
-		console.log(data);
 
 		const result = [];
-
 		for(const elem of data.elements) {
-			const translatedData = translateOSMData(elem);
-			if (elem.tags.leisure?.includes("nature_reserve")) {
-				translatedData.category = "reserve";
-			} else if (elem.tags.tourism?.includes("camp_site") || Object.hasOwn(elem.tags, "camp_site")) {
-				translatedData.category = "campground";
-			} else {
-				translatedData.category = "trail";
-			}
-			result.push(translatedData);
+			result.push(translateOSMData(elem));
 		}
-
 		res.send(result);
 	} catch (error) {
 		res.status(500).send(error);
 	}
 }
 
-export function getSingleFeature(req, res) {
+export async function getSingleFeature(req, res) {
 	const { osm_type, osm_id } = req.params;
-
-	res.sendStatus(501);
+	try {
+		const query = `\
+			[out:json][timeout:25];${
+			osm_type}(${osm_id});${
+			"out geom qt;"}`;
+		const { data } = await axios.post(overpassURL, query, {
+			headers: { "content-type": "text/plain" },
+			responseType: "json"
+		});
+		const result = translateOSMData(data.elements[0]);
+		res.send(result);
+	} catch (error) {
+		res.status(500).send(error);
+	}
 }
