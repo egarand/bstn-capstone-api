@@ -1,4 +1,6 @@
-import { query, param, validationResult } from "express-validator";
+import { query, param, check, validationResult } from "express-validator";
+
+const validTaxa = ["Actinopterygii","Animalia","Amphibia","Arachnida","Aves","Chromista","Fungi","Insecta","Mammalia","Mollusca","Reptilia","Plantae","Protozoa"];
 
 function rejectBadValues(req, res, next) {
 	const errors = validationResult(req);
@@ -8,13 +10,17 @@ function rejectBadValues(req, res, next) {
 	next();
 }
 
-export const mapSearchFeatures = [
-	query("lat")
+const latLon = [
+	check("lat")
 		.escape().trim()
 		.notEmpty().isFloat({min: -90, max: 90}),
-	query("lon")
+	check("lon")
 		.escape().trim()
 		.notEmpty().isFloat({min: -180, max: 180}),
+]
+
+export const mapSearchFeatures = [
+	...latLon,
 	query("radius")
 		.escape().trim()
 		.notEmpty().isFloat({min: 10, max: 10_000}),
@@ -28,5 +34,14 @@ export const mapGetSingle = [
 		.trim().notEmpty().isInt(),
 	param("osm_type")
 		.trim().notEmpty().isIn(["way","relation","node"]),
+	rejectBadValues
+];
+
+export const speciesSearchByLocation = [
+	...latLon,
+	query("taxa")
+		.escape().trim()
+		.notEmpty()
+		.matches(`^(?:(?:${validTaxa.join("|")}),?)+\$`, "i"),
 	rejectBadValues
 ];
