@@ -45,3 +45,9 @@ export const speciesSearchByLocation = [
 		.matches(`^(?:(?:${validTaxa.join("|")}),?)+\$`, "i"),
 	rejectBadValues
 ];
+
+export const speciesGetSingle = [
+	param("id")
+		.trim().notEmpty().isInt(),
+	rejectBadValues
+];
