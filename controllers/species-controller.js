@@ -19,7 +19,7 @@ export async function searchByLocation(req, res) {
 
 		const { data: { results }} = await axios.get(url);
 
-		const resData = results.map((taxon) => ({
+		const resData = results.map(({ taxon }) => ({
 			id: taxon.id,
 			common_name: taxon.preferred_common_name || taxon.english_common_name,
 			photo: {
