@@ -9,17 +9,16 @@ const trailsQuery =
 `(
 	wr[!canoe][!portage][name][route~"hiking|bicycle"];
 	wr[!canoe][!portage][name][highway~"footway|cycleway|path"][sac_scale~"hiking"];
-	<<;
 );
 out geom qt;`;
 
 const reservesQuery =
-`wr[leisure^nature_reserve];
+`wr[leisure~nature_reserve];
 out geom qt;`;
 
 const campgroundsQuery =
 `(
-	wr[name][tourism^camp_site];
+	wr[name][tourism~camp_site];
 	wr[name][camp_site];
 );
 out geom qt;`;
@@ -69,9 +68,9 @@ export async function searchFeatures(req, res) {
 
 		const query = `\
 			[out:json][timeout:25][bbox:${south},${west},${north},${east}];${
-			types.includes("t") ? trailsQuery : ""}${
+			types.includes("r") ? reservesQuery : ""}${
 			types.includes("c") ? campgroundsQuery : ""}${
-			types.includes("r") ? reservesQuery : ""}`;
+			types.includes("t") ? trailsQuery : ""}`.replaceAll("\t", "");
 
 		const { data } = await axios.post(overpassURL, query, {
 			headers: { "content-type": "text/plain" },
