@@ -23,9 +23,9 @@ export const mapSearchFeatures = [
 	...latLon,
 	query("radius")
 		.escape().trim()
-		.notEmpty().isFloat({min: 10, max: 10_000}),
+		.notEmpty().isFloat({min: 10, max: 30_000}),
 	query("types")
-		.trim().isWhitelisted(["t", "c", "r"]),
+		.trim().matches(/^(?:[tcr]{1},?)+$/i),
 	rejectBadValues
 ];
 
