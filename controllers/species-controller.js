@@ -7,8 +7,7 @@ const inatBaseUrl = "https://api.inaturalist.org/v1/";
 const userAgent = process.env.INAT_UA;
 
 export async function searchByLocation(req, res) {
-	const { north, east, south, west, taxa, page } = req.query;
-	console.log(req.query);
+	const { north, east, south, west, taxa } = req.query;
 
 	try {
 		const url = new URL("observations/species_counts", inatBaseUrl);
@@ -17,8 +16,7 @@ export async function searchByLocation(req, res) {
 			["month", (new Date()).getMonth()],
 			["iconic_taxa", taxa],
 			["rank", "species"],
-			["page", page || 1],
-			["per_page", perPage],
+			["per_page", 100],
 			["nelat", north],
 			["nelng", east],
 			["swlat", south],
@@ -38,8 +36,7 @@ export async function searchByLocation(req, res) {
 			}
 		}));
 		res.send({
-			page: data.page,
-			page_count: Math.ceil(data.total_results / perPage),
+			total: Math.min(data.total_results, 100),
 			species
 		});
 	} catch (error) {
