@@ -1,5 +1,6 @@
 import "dotenv/config";
 import axios from "axios";
+import gpsUtil from "gps-util";
 
 const inatBaseUrl = "https://api.inaturalist.org/v1/";
 
@@ -7,9 +8,29 @@ const inatBaseUrl = "https://api.inaturalist.org/v1/";
 const userAgent = process.env.INAT_UA;
 
 export async function searchByLocation(req, res) {
-	const { north, east, south, west, taxa } = req.query;
+	let { north, east, south, west, taxa } = req.query;
 
 	try {
+		// ensure bounding box is minimum 5 km across in both axes
+		// helpful for PoIs with small bounding boxes
+		let latDistance = gpsUtil.getDistance(east, north, west, north),
+			lngDistance = gpsUtil.getDistance(east, north, east, south);
+		if (latDistance < 5_000 || lngDistance < 5_000) {
+			const mid = gpsUtil.getMidPoint([
+				{lat: north, lng: east},
+				{lat: south, lng: west}
+			]);
+			const minBbox = gpsUtil.getBoundingBox(mid.lat, mid.lng, 2_500);
+			if (latDistance < 5_000) {
+				south = minBbox[0].lat;
+				north = minBbox[1].lat;
+			}
+			if (lngDistance < 5_000) {
+				west = minBbox[0].lng;
+				east = minBbox[1].lng;
+			}
+		}
+
 		const url = new URL("observations/species_counts", inatBaseUrl);
 		[
 			["verifiable", true],
