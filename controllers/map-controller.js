@@ -37,11 +37,11 @@ function translateOSMData(element) {
 	};
 	if (element.type === "relation") {
 		result.geometry =
-			element.members.map(
-				(member) => member.geometry
+			element.members.filter((g) => !!g && !!g.geometry).map(
+				(member) => member.geometry?.filter((g) => !!g)
 			);
 	} else if (element.type === "way") {
-		result.geometry = element.geometry;
+		result.geometry = element.geometry.filter((g) => !!g);
 	}
 
 	if (result.tags.leisure?.includes("nature_reserve")) {
