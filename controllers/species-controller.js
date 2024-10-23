@@ -1,9 +1,12 @@
 import axios from "axios";
 
 const inatBaseUrl = "https://api.inaturalist.org/v1/";
+const perPage = 16;
 
 export async function searchByLocation(req, res) {
-	const { lat, lon, taxa } = req.query;
+	const { north, east, south, west, taxa, page } = req.query;
+	console.log(req.query);
+
 	try {
 		const url = new URL("observations/species_counts", inatBaseUrl);
 		[
@@ -11,15 +14,18 @@ export async function searchByLocation(req, res) {
 			["month", (new Date()).getMonth()],
 			["iconic_taxa", taxa],
 			["rank", "species"],
-			["per_page", 30],
-			["lat", lat],
-			["lng", lon],
-			["radius", 5] //km
+			["page", page || 1],
+			["per_page", perPage],
+			["nelat", north],
+			["nelng", east],
+			["swlat", south],
+			["swlng", west]
 		].forEach(([k, v]) => url.searchParams.append(k, v));
+		console.log(url.searchParams);
 
-		const { data: { results }} = await axios.get(url);
+		const { data } = await axios.get(url);
 
-		const resData = results.map(({ taxon }) => ({
+		const species = data.results.map(({ taxon }) => ({
 			id: taxon.id,
 			common_name: taxon.preferred_common_name || taxon.english_common_name,
 			photo: {
@@ -27,9 +33,14 @@ export async function searchByLocation(req, res) {
 				attribution: taxon.default_photo.attribution
 			}
 		}));
-		res.send(resData);
+		res.send({
+			page: data.page,
+			page_count: Math.ceil(data.total_results / perPage),
+			species
+		});
 	} catch (error) {
-		res.status(500).send(error);
+		console.log(error);
+		res.status(500).send(error.message);
 	}
 }
 

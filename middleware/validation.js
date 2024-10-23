@@ -10,17 +10,21 @@ function rejectBadValues(req, res, next) {
 	next();
 }
 
-const latLon = [
-	check("lat")
-		.escape().trim()
-		.notEmpty().isFloat({min: -90, max: 90}),
-	check("lon")
-		.escape().trim()
-		.notEmpty().isFloat({min: -180, max: 180}),
-]
+function lat(name = "lat") {
+	return check(name)
+			.escape().trim()
+			.notEmpty().isFloat({min: -90, max: 90});
+}
+
+function lon(name = "lon") {
+	return check(name)
+			.escape().trim()
+			.notEmpty().isFloat({min: -180, max: 180});
+}
 
 export const mapSearchFeatures = [
-	...latLon,
+	lat(),
+	lon(),
 	query("radius")
 		.escape().trim()
 		.notEmpty().isFloat({min: 10, max: 30_000}),
@@ -38,7 +42,13 @@ export const mapGetSingle = [
 ];
 
 export const speciesSearchByLocation = [
-	...latLon,
+	lat("north"),
+	lat("south"),
+	lon("west"),
+	lon("east"),
+	query("page")
+		.optional()
+		.trim().isInt({ min: 1 }),
 	query("taxa")
 		.escape().trim()
 		.notEmpty()
