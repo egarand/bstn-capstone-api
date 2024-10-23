@@ -27,7 +27,13 @@ function translateOSMData(element) {
 	const result = {
 		osm_type: element.type,
 		osm_id: element.id,
-		tags: element.tags
+		tags: element.tags,
+		bounds: {
+			north: element.bounds.maxlat,
+			east: element.bounds.maxlon,
+			south: element.bounds.minlat,
+			west: element.bounds.minlon,
+		}
 	};
 	if (element.type === "relation") {
 		result.geometry =
