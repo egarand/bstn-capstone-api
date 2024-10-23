@@ -1,7 +1,10 @@
+import "dotenv/config";
 import axios from "axios";
 
 const inatBaseUrl = "https://api.inaturalist.org/v1/";
-const perPage = 16;
+
+// courtesy to help inaturalist identify requests from this application
+const userAgent = process.env.INAT_UA;
 
 export async function searchByLocation(req, res) {
 	const { north, east, south, west, taxa, page } = req.query;
@@ -21,9 +24,10 @@ export async function searchByLocation(req, res) {
 			["swlat", south],
 			["swlng", west]
 		].forEach(([k, v]) => url.searchParams.append(k, v));
-		console.log(url.searchParams);
 
-		const { data } = await axios.get(url);
+		const { data } = await axios.get(url, {
+			"User-Agent": userAgent
+		});
 
 		const species = data.results.map(({ taxon }) => ({
 			id: taxon.id,
@@ -39,7 +43,6 @@ export async function searchByLocation(req, res) {
 			species
 		});
 	} catch (error) {
-		console.log(error);
 		res.status(500).send(error.message);
 	}
 }
@@ -48,7 +51,9 @@ export async function getSingleSpecies(req, res) {
 	const { id } = req.params;
 	try {
 		const inatUrl = new URL(`taxa/${id}`, inatBaseUrl);
-		const { data: { results: [taxon] } } = await axios.get(inatUrl);
+		const { data: { results: [taxon] } } = await axios.get(inatUrl, {
+			"User-Agent": userAgent
+		});
 
 		const wikiUrl = new URL(
 			taxon.wikipedia_url.split("/").pop(),
