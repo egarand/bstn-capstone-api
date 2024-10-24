@@ -1,7 +1,5 @@
 import { query, param, check, validationResult } from "express-validator";
 
-const validTaxa = ["Actinopterygii","Animalia","Amphibia","Arachnida","Aves","Chromista","Fungi","Insecta","Mammalia","Mollusca","Reptilia","Plantae","Protozoa"];
-
 function rejectBadValues(req, res, next) {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -46,13 +44,6 @@ export const speciesSearchByLocation = [
 	lat("south"),
 	lon("west"),
 	lon("east"),
-	query("page")
-		.optional()
-		.trim().isInt({ min: 1 }),
-	query("taxa")
-		.escape().trim()
-		.notEmpty()
-		.matches(`^(?:(?:${validTaxa.join("|")}),?)+\$`, "i"),
 	rejectBadValues
 ];
 

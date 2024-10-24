@@ -3,12 +3,13 @@ import axios from "axios";
 import gpsUtil from "gps-util";
 
 const inatBaseUrl = "https://api.inaturalist.org/v1/";
+const searchTaxa = ["Actinopterygii","Amphibia","Arachnida","Aves","Fungi","Insecta","Mammalia","Reptilia","Plantae"];
 
 // courtesy to help source apis identify requests from this application
 const userAgent = process.env.CUSTOM_UA;
 
 export async function searchByLocation(req, res) {
-	let { north, east, south, west, taxa } = req.query;
+	let { north, east, south, west } = req.query;
 
 	try {
 		// ensure bounding box is minimum 5 km across in both axes
@@ -35,7 +36,7 @@ export async function searchByLocation(req, res) {
 		[
 			["verifiable", true],
 			["month", (new Date()).getMonth()],
-			["iconic_taxa", taxa],
+			["iconic_taxa", searchTaxa],
 			["rank", "species"],
 			["per_page", 100],
 			["nelat", north],
@@ -56,6 +57,7 @@ export async function searchByLocation(req, res) {
 			common_name: taxon.preferred_common_name
 				|| taxon.english_common_name
 				|| taxon.name,
+			iconic_taxon: taxon.iconic_taxon_name,
 			photo: {
 				square_url: taxon.default_photo.square_url,
 				attribution: taxon.default_photo.attribution
