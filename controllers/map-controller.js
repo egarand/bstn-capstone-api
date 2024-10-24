@@ -1,6 +1,9 @@
 import axios from "axios";
 import gpsUtil from "gps-util";
 
+// courtesy to help source apis identify requests from this application
+const userAgent = process.env.CUSTOM_UA;
+
 // || OVERPASS API QUERIES
 
 const overpassURL = "https://overpass-api.de/api/interpreter";
@@ -27,15 +30,21 @@ function translateOSMData(element) {
 	const result = {
 		osm_type: element.type,
 		osm_id: element.id,
-		tags: element.tags
+		tags: element.tags,
+		bounds: {
+			north: element.bounds.maxlat,
+			east: element.bounds.maxlon,
+			south: element.bounds.minlat,
+			west: element.bounds.minlon,
+		}
 	};
 	if (element.type === "relation") {
 		result.geometry =
-			element.members.map(
-				(member) => member.geometry
+			element.members.filter((g) => !!g && !!g.geometry).map(
+				(member) => member.geometry?.filter((g) => !!g)
 			);
 	} else if (element.type === "way") {
-		result.geometry = element.geometry;
+		result.geometry = element.geometry.filter((g) => !!g);
 	}
 
 	if (result.tags.leisure?.includes("nature_reserve")) {
@@ -73,7 +82,11 @@ export async function searchFeatures(req, res) {
 			types.includes("t") ? trailsQuery : ""}`.replaceAll("\t", "");
 
 		const { data } = await axios.post(overpassURL, query, {
-			headers: { "content-type": "text/plain" },
+			headers: {
+				"content-type": "text/plain",
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			},
 			responseType: "json"
 		});
 
@@ -95,7 +108,11 @@ export async function getSingleFeature(req, res) {
 			osm_type}(${osm_id});${
 			"out geom qt;"}`;
 		const { data } = await axios.post(overpassURL, query, {
-			headers: { "content-type": "text/plain" },
+			headers: {
+				"content-type": "text/plain",
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			},
 			responseType: "json"
 		});
 		const result = translateOSMData(data.elements[0]);
