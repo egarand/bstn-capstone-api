@@ -4,8 +4,8 @@ import gpsUtil from "gps-util";
 
 const inatBaseUrl = "https://api.inaturalist.org/v1/";
 
-// courtesy to help inaturalist identify requests from this application
-const userAgent = process.env.INAT_UA;
+// courtesy to help source apis identify requests from this application
+const userAgent = process.env.CUSTOM_UA;
 
 export async function searchByLocation(req, res) {
 	let { north, east, south, west, taxa } = req.query;
@@ -45,7 +45,10 @@ export async function searchByLocation(req, res) {
 		].forEach(([k, v]) => url.searchParams.append(k, v));
 
 		const { data } = await axios.get(url, {
-			"User-Agent": userAgent
+			headers: {
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			}
 		});
 
 		const species = data.results.map(({ taxon }) => ({
@@ -70,14 +73,22 @@ export async function getSingleSpecies(req, res) {
 	try {
 		const inatUrl = new URL(`taxa/${id}`, inatBaseUrl);
 		const { data: { results: [taxon] } } = await axios.get(inatUrl, {
-			"User-Agent": userAgent
+			headers: {
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			}
 		});
 
 		const wikiUrl = new URL(
 			taxon.wikipedia_url.split("/").pop(),
 			"https://en.wikipedia.org/api/rest_v1/page/summary/"
 		);
-		const { data: { extract_html }} = await axios.get(wikiUrl);
+		const { data: { extract_html }} = await axios.get(wikiUrl, {
+			headers: {
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			}
+		});
 
 		const result = {
 			id: taxon.id,

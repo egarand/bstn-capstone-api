@@ -1,6 +1,9 @@
 import axios from "axios";
 import gpsUtil from "gps-util";
 
+// courtesy to help source apis identify requests from this application
+const userAgent = process.env.CUSTOM_UA;
+
 // || OVERPASS API QUERIES
 
 const overpassURL = "https://overpass-api.de/api/interpreter";
@@ -79,7 +82,11 @@ export async function searchFeatures(req, res) {
 			types.includes("t") ? trailsQuery : ""}`.replaceAll("\t", "");
 
 		const { data } = await axios.post(overpassURL, query, {
-			headers: { "content-type": "text/plain" },
+			headers: {
+				"content-type": "text/plain",
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			},
 			responseType: "json"
 		});
 
@@ -101,7 +108,11 @@ export async function getSingleFeature(req, res) {
 			osm_type}(${osm_id});${
 			"out geom qt;"}`;
 		const { data } = await axios.post(overpassURL, query, {
-			headers: { "content-type": "text/plain" },
+			headers: {
+				"content-type": "text/plain",
+				"User-Agent": userAgent,
+				"Api-User-Agent": userAgent
+			},
 			responseType: "json"
 		});
 		const result = translateOSMData(data.elements[0]);
