@@ -53,7 +53,9 @@ export async function searchByLocation(req, res) {
 
 		const species = data.results.map(({ taxon }) => ({
 			id: taxon.id,
-			common_name: taxon.preferred_common_name || taxon.english_common_name,
+			common_name: taxon.preferred_common_name
+				|| taxon.english_common_name
+				|| taxon.name,
 			photo: {
 				square_url: taxon.default_photo.square_url,
 				attribution: taxon.default_photo.attribution
@@ -71,7 +73,7 @@ export async function searchByLocation(req, res) {
 export async function getSingleSpecies(req, res) {
 	const { id } = req.params;
 	try {
-		const inatUrl = new URL(`taxa/${id}`, inatBaseUrl);
+		const inatUrl = new URL(`taxa/${id}?rank_level=10`, inatBaseUrl);
 		const { data: { results: [taxon] } } = await axios.get(inatUrl, {
 			headers: {
 				"User-Agent": userAgent,
