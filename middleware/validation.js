@@ -1,4 +1,4 @@
-import { query, param, check, validationResult } from "express-validator";
+import { query, param, body, check, validationResult } from "express-validator";
 
 function rejectBadValues(req, res, next) {
 	const errors = validationResult(req);
@@ -52,3 +52,13 @@ export const speciesGetSingle = [
 		.trim().notEmpty().isInt(),
 	rejectBadValues
 ];
+
+export const userSavePoi = [
+	body("osm_id")
+		.trim().notEmpty().isInt(),
+	body("osm_type")
+		.trim().notEmpty().isIn(["way","relation","node"]),
+	body("name")
+		.escape().trim().notEmpty(),
+	rejectBadValues
+]
