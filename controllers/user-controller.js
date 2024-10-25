@@ -24,8 +24,38 @@ export async function getSavedPois(req, res) {
 	}
 }
 
-export function savePoi(req, res) {
-	res.sendStatus(501);
+export async function savePoi(req, res) {
+	const { osm_id, osm_type, name } = req.body;
+	try {
+		// TODO validate JWT token, get real user id, return a 401 if no token, etc
+		const user_id = 1;
+
+		await knex.transaction(async (trx) => {
+			// create poi in pois table if it doesn't exist
+			await trx("pois")
+				.insert({ osm_id, osm_type, name })
+				.onConflict(["osm_id", "osm_type"])
+				.ignore();
+
+			const poi =
+				await trx("pois")
+					.where({ osm_id, osm_type })
+					.select("*")
+					.first();
+
+			await trx("saved_pois")
+				.insert({ user_id, poi_id: poi.id });
+
+			res.status(201).send(poi);
+		});
+	} catch (error) {
+		// postgres error code for violated unique constraint
+		if (error.code === "23505") {
+			res.status(409).send("Can't bookmark the same location twice");
+		} else {
+			res.sendStatus(500);
+		}
+	}
 }
 
 export function deletePoi(req, res) {

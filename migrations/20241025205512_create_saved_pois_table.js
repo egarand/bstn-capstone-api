@@ -17,6 +17,10 @@ export function up(knex) {
 			.references("pois.id")
 			.onUpdate("CASCADE")
 			.onDelete("CASCADE");
+		table.unique(["user_id", "poi_id"], {
+			indexName: "unique_bookmarks_index",
+			useConstraint: true
+		});
 	});
 };
 

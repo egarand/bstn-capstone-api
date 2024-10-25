@@ -8,6 +8,10 @@ export function up(knex) {
 		table.string("name", 128).notNullable();
 		table.integer("osm_id").notNullable();
 		table.string("osm_type", 10).notNullable();
+		table.unique(["osm_id", "osm_type"], {
+			indexName: "unique_pois_index",
+			useConstraint: true
+		});
 	});
 };
 
