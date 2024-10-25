@@ -1,7 +1,12 @@
 import express from "express";
 import * as userController from "../controllers/user-controller.js";
+import { limiter, speedLimiter } from "../middleware/rate-limiting.js";
 
 const router = express.Router();
+router.use(
+	limiter,
+	speedLimiter
+);
 
 router.route("/pois")
 	.get(userController.getSavedPois)
