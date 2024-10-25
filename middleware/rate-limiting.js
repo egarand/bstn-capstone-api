@@ -10,24 +10,22 @@ import { slowDown } from "express-slow-down";
 
 const oneMinute = 60 * 1000;
 
-/** Use to rate limit requests to proxy endpoints */
-export const sourceApiLimiter = rateLimit({
+const proxyLimiterConfig = {
 	windowMs: oneMinute,
 	limit: 10,
 	message: "Too many requests; try again in 1 minute."
-});
+};
 
-/** Use to delay requests to proxy endpoints */
-export const sourceApiSpeedLimiter = slowDown({
+const proxySpeedLimiterConfig = {
 	windowMs: oneMinute,
 	delayAfter: 5,
 	maxDelayMs: 10_000
-});
+};
 
 /** Use to rate limit requests to non-proxy endpoints */
 export const limiter = rateLimit({
 	windowMs: oneMinute,
-	limit: 50,
+	limit: 20,
 	message: "Too many requests; try again in 1 minute."
 });
 
@@ -37,3 +35,13 @@ export const speedLimiter = slowDown({
 	delayAfter: 5,
 	maxDelayMs: 5000
 });
+
+/** Use to rate limit requests to inaturalist proxy endpoints */
+export const inatLimiter = rateLimit(proxyLimiterConfig);
+/** Use to delay requests to inaturalist proxy endpoints */
+export const inatSpeedLimiter = slowDown(proxySpeedLimiterConfig);
+
+/** Use to rate limit requests to overpass proxy endpoints */
+export const osmLimiter = rateLimit(proxyLimiterConfig);
+/** Use to delay requests to overpass proxy endpoints */
+export const osmSpeedLimiter = slowDown(proxySpeedLimiterConfig);

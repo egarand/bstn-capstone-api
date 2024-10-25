@@ -2,13 +2,13 @@ import express from "express";
 import apicache from "apicacheable";
 import * as mapController from "../controllers/map-controller.js";
 import * as validate from "../middleware/validation.js";
-import { sourceApiLimiter, sourceApiSpeedLimiter } from "../middleware/rate-limiting.js";
+import { osmLimiter, osmSpeedLimiter } from "../middleware/rate-limiting.js";
 
 const router = express.Router();
 router.use(
 	apicache("10 minutes"),
-	sourceApiLimiter,
-	sourceApiSpeedLimiter
+	osmLimiter,
+	osmSpeedLimiter
 );
 
 router.route("/")
