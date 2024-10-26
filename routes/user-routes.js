@@ -14,7 +14,10 @@ router.route("/pois")
 	);
 
 router.route("/pois/:id")
-	.delete(userController.deletePoi);
+	.delete(
+		...validate.userDeletePoi,
+		userController.deletePoi
+	);
 
 router.route("/register")
 	.post(userController.register);

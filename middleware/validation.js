@@ -61,4 +61,10 @@ export const userSavePoi = [
 	body("name")
 		.escape().trim().notEmpty(),
 	rejectBadValues
-]
+];
+
+export const userDeletePoi = [
+	param("id")
+		.trim().notEmpty().isInt(),
+	rejectBadValues
+];
