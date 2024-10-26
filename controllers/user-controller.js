@@ -58,8 +58,37 @@ export async function savePoi(req, res) {
 	}
 }
 
-export function deletePoi(req, res) {
-	res.sendStatus(501);
+export async function deletePoi(req, res) {
+	const { id: poi_id } = req.params;
+	try {
+		// TODO validate JWT token, get real user id, return a 401 if no token, etc
+		const user_id = 1;
+
+		await knex.transaction(async (trx) => {
+			const poi = await trx("saved_pois")
+				.where({ user_id, poi_id })
+				.first();
+			if (!poi) {
+				return res.sendStatus(404);
+			}
+
+			await trx("saved_pois").where({ user_id, poi_id }).del();
+
+			// if no users have this location bookmarked anymore, we don't
+			// need it anymore; so delete it.
+			const count =
+				(await trx("saved_pois")
+					.where({ poi_id })
+					.count()
+				)[0].count;
+			if (count === "0") {
+				await trx("pois").where({ id: poi_id }).del();
+			}
+			res.sendStatus(204);
+		});
+	} catch (error) {
+		res.sendStatus(500);
+	}
 }
 
 // || ROUTE HANDLERS - AUTH
