@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import "dotenv/config";
 
 /**
 * @param { import("knex").Knex } knex
@@ -11,7 +12,7 @@ export async function seed(knex) {
 		{
 			id: 1,
 			email: "example@example.com",
-			password: bcrypt.hashSync("password", 10) // just for testing
+			password: await bcrypt.hash("password", Number(process.env.SALT_ROUNDS)) // just for testing
 		}
 	]);
 };
