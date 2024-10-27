@@ -129,6 +129,19 @@ export async function register(req, res) {
 	}
 }
 
-export function login(req, res) {
-	res.sendStatus(501);
+export async function login(req, res) {
+	try {
+		const { email, password } = req.body;
+
+		// validate credentials
+		const user = await knex("users").where({ email }).first();
+		const passwordsMatch = await bcrypt.compare(password, user?.password?.toString() || "");
+		if (!user || !passwordsMatch) {
+			return res.status(401).send("Invalid email or password");
+		}
+		res.sendStatus(200);
+	} catch (error) {
+		console.log(error);
+		res.sendStatus(500);
+	}
 }
