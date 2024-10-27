@@ -99,9 +99,23 @@ export async function register(req, res) {
 	try {
 		const { email, password } = req.body;
 		await knex.transaction(async (trx) => {
+			// if account with this email exists, mimic a validation error.
+			// this should offer slightly more security; it's not as easy to
+			// tell if an email has an account on the site or not just by the
+			// response code or structure.
 			const user = await trx("users").where({ email }).first();
 			if (user) {
-				return res.status(409).send("Invalid email address");
+				return res.status(400).send({
+					errors: [
+						{
+							type: "field",
+							value: "relation",
+							msg: "Invalid value",
+							path: "email",
+							location: "body"
+						}
+					]
+				});
 			}
 
 			await trx("users").insert({
