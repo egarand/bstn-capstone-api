@@ -1,5 +1,6 @@
 import initKnex from "knex";
 import knexConfig from "../knexfile.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 const knex = initKnex(knexConfig);
@@ -8,13 +9,10 @@ const knex = initKnex(knexConfig);
 
 export async function getSavedPois(req, res) {
 	try {
-		// TODO validate JWT token, get real user id, return a 401 if no token, etc
-		const user_id = 1;
-
 		const poiList =
 			await knex("saved_pois")
 				.innerJoin("pois", "saved_pois.poi_id", "pois.id")
-				.where({ "saved_pois.user_id": user_id })
+				.where({ "saved_pois.user_id": req.user.id })
 				.select("pois.*");
 		if (!poiList.length) {
 			res.sendStatus(204);
@@ -27,11 +25,8 @@ export async function getSavedPois(req, res) {
 }
 
 export async function savePoi(req, res) {
-	const { osm_id, osm_type, name } = req.body;
 	try {
-		// TODO validate JWT token, get real user id, return a 401 if no token, etc
-		const user_id = 1;
-
+		const { osm_id, osm_type, name } = req.body;
 		await knex.transaction(async (trx) => {
 			// create poi in pois table if it doesn't exist
 			await trx("pois")
@@ -46,7 +41,7 @@ export async function savePoi(req, res) {
 					.first();
 
 			await trx("saved_pois")
-				.insert({ user_id, poi_id: poi.id });
+				.insert({ user_id: req.user.id, poi_id: poi.id });
 
 			res.status(201).send(poi);
 		});
@@ -61,10 +56,9 @@ export async function savePoi(req, res) {
 }
 
 export async function deletePoi(req, res) {
-	const { id: poi_id } = req.params;
 	try {
-		// TODO validate JWT token, get real user id, return a 401 if no token, etc
-		const user_id = 1;
+		const { id: poi_id } = req.params;
+		const { id: user_id } = req.user;
 
 		await knex.transaction(async (trx) => {
 			const poi = await trx("saved_pois")
@@ -95,6 +89,14 @@ export async function deletePoi(req, res) {
 
 // || ROUTE HANDLERS - AUTH
 
+function getNewToken(userId) {
+	return jwt.sign(
+		{ id: userId },
+		process.env.PRIVATE_KEY,
+		{ expiresIn: "1d" }
+	);
+}
+
 export async function register(req, res) {
 	try {
 		const { email, password } = req.body;
@@ -122,7 +124,9 @@ export async function register(req, res) {
 				email,
 				password: await bcrypt.hash(password, Number(process.env.SALT_ROUNDS))
 			});
-			return res.sendStatus(201);
+
+			const newUser = await trx("users").where({ email }).first();
+			return res.status(201).send({ token: getNewToken(newUser.id) });
 		});
 	} catch (error) {
 		res.sendStatus(500);
@@ -139,7 +143,8 @@ export async function login(req, res) {
 		if (!user || !passwordsMatch) {
 			return res.status(401).send("Invalid email or password");
 		}
-		res.sendStatus(200);
+
+		res.send({ token: getNewToken(user.id) });
 	} catch (error) {
 		console.log(error);
 		res.sendStatus(500);
