@@ -20,7 +20,10 @@ router.route("/pois/:id")
 	);
 
 router.route("/register")
-	.post(userController.register);
+	.post(
+		...validate.userRegister,
+		userController.register
+	);
 
 router.route("/login")
 	.post(userController.login);

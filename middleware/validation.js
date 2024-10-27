@@ -68,3 +68,13 @@ export const userDeletePoi = [
 		.trim().notEmpty().isInt(),
 	rejectBadValues
 ];
+
+export const userRegister = [
+	body("email")
+		.escape().trim()
+		.notEmpty().isEmail(),
+	body("password")
+		.escape().trim()
+		.notEmpty().matches(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,32}$/),
+	rejectBadValues
+]
