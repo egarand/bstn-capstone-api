@@ -1,5 +1,7 @@
 import initKnex from "knex";
 import knexConfig from "../knexfile.js";
+import bcrypt from "bcrypt";
+import "dotenv/config";
 const knex = initKnex(knexConfig);
 
 // || ROUTE HANDLERS - PoI MANAGEMENT
@@ -93,8 +95,24 @@ export async function deletePoi(req, res) {
 
 // || ROUTE HANDLERS - AUTH
 
-export function register(req, res) {
-	res.sendStatus(501);
+export async function register(req, res) {
+	try {
+		const { email, password } = req.body;
+		await knex.transaction(async (trx) => {
+			const user = await trx("users").where({ email }).first();
+			if (user) {
+				return res.status(409).send("Invalid email address");
+			}
+
+			await trx("users").insert({
+				email,
+				password: await bcrypt.hash(password, Number(process.env.SALT_ROUNDS))
+			});
+			return res.sendStatus(201);
+		});
+	} catch (error) {
+		res.sendStatus(500);
+	}
 }
 
 export function login(req, res) {
