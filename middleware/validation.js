@@ -60,6 +60,8 @@ export const userSavePoi = [
 		.trim().notEmpty().isIn(["way","relation","node"]),
 	body("name")
 		.escape().trim().notEmpty(),
+	body("category")
+		.trim().notEmpty().isIn(["trail","campground","reserve"]),
 	rejectBadValues
 ];
 
