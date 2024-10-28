@@ -8,12 +8,14 @@ export async function seed(knex) {
 		{
 			id: 1,
 			name: "Lookout Trail",
+			category: "trail",
 			osm_id: 41285743,
 			osm_type: "way"
 		},
 		{
 			id: 2,
 			name: "Lake of Two Rivers Campground",
+			category: "campground",
 			osm_id: 17154401,
 			osm_type: "relation"
 		}

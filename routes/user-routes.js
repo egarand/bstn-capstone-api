@@ -1,19 +1,37 @@
 import express from "express";
-import * as userController from "../controllers/auth-controller.js";
+import * as userController from "../controllers/user-controller.js";
+import { speedLimiter } from "../middleware/rate-limiting.js";
+import { verifyToken } from "../middleware/auth.js";
+import * as validate from "../middleware/validation.js";
 
 const router = express.Router();
+router.use(speedLimiter);
 
 router.route("/pois")
-	.get(userController.getSavedPois)
-	.post(userController.savePoi);
+	.get(
+		verifyToken,
+		userController.getSavedPois
+	)
+	.post(
+		verifyToken,
+		...validate.userSavePoi,
+		userController.savePoi
+	);
 
 router.route("/pois/:id")
-	.delete(userController.deletePoi);
+	.delete(
+		verifyToken,
+		...validate.userDeletePoi,
+		userController.deletePoi
+	);
 
 router.route("/register")
-	.get(userController.register);
+	.post(
+		...validate.userRegister,
+		userController.register
+	);
 
 router.route("/login")
-	.get(userController.login);
+	.post(userController.login);
 
 export default router;
