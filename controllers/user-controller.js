@@ -26,11 +26,20 @@ export async function getSavedPois(req, res) {
 
 export async function savePoi(req, res) {
 	try {
-		const { osm_id, osm_type, name } = req.body;
+		const { osm_id, osm_type, name, category } = req.body;
+		const poiii =
+				await knex("pois")
+					.where({ osm_id, osm_type })
+					.select("*")
+					.first();
+		console.log(req.body);
+		console.log(poiii);
+
+
 		await knex.transaction(async (trx) => {
 			// create poi in pois table if it doesn't exist
 			await trx("pois")
-				.insert({ osm_id, osm_type, name })
+				.insert({ osm_id, osm_type, name, category })
 				.onConflict(["osm_id", "osm_type"])
 				.ignore();
 
